@@ -1,5 +1,5 @@
 # GM.Tools
-A set of specialized tools (e.g. for Google API, NodeJS, ...).
+.NET library with a set of specialized tools (e.g. for Google API, ...).
 
 [![Latest release](https://img.shields.io/github/release/GregaMohorko/GM.Tools.svg?style=flat-square)](https://github.com/GregaMohorko/GM.Tools/releases/latest)
 [![NuGet](https://img.shields.io/nuget/v/GM.Tools.svg?style=flat-square)](https://www.nuget.org/packages/GM.Tools)
