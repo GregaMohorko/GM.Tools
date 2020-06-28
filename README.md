@@ -17,8 +17,8 @@
 .NET Standard 2.0
 
 ## Author and License
-Grega Mohorko ([www.mohorko.info](https://www.mohorko.info))
+Gregor Mohorko ([www.mohorko.info](https://www.mohorko.info))
 
-Copyright (c) 2018 Grega Mohorko
+Copyright (c) 2020 Gregor Mohorko
 
-[MIT License](./LICENSE)
+[MIT License](./LICENSE.md)
