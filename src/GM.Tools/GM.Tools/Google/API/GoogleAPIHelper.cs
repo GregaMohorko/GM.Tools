@@ -1,7 +1,7 @@
 ﻿/*
 MIT License
 
-Copyright (c) 2018 Grega Mohorko
+Copyright (c) 2023 Gregor Mohorko
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,13 @@ SOFTWARE.
 
 Project: GM.Tools
 Created: 2018-2-1
-Author: GregaMohorko
+Author: Gregor Mohorko
 */
 
-using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Text;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using GM.Utility.Net;
 using Newtonsoft.Json;
 
@@ -37,11 +37,11 @@ namespace GM.Tools.Google.API
 {
     internal static class GoogleAPIHelper
     {
-		public static T GetResponse<T>(string url, NameValueCollection values)
+		public static async Task<T> GetResponse<T>(string url, IEnumerable<KeyValuePair<string, string>> values, CancellationToken ct, HttpClient httpClient = null)
 		{
 			string jsonResult;
-			using(var webClient = new GMWebClient()) {
-				jsonResult = webClient.UploadValues(url, values, HttpMethod.GET);
+			using(var webClient = new GMHttpClient(httpClient, disposeHttpClient: httpClient != null)) {
+				jsonResult = await webClient.UploadValuesAsync(url, values, System.Net.Http.HttpMethod.Get, ct);
 			}
 
 			T response = JsonConvert.DeserializeObject<T>(jsonResult);

@@ -1,7 +1,7 @@
 ﻿/*
 MIT License
 
-Copyright (c) 2018 Grega Mohorko
+Copyright (c) 2023 Gregor Mohorko
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,16 @@ SOFTWARE.
 
 Project: GM.Tools
 Created: 2018-2-1
-Author: GregaMohorko
+Author: Gregor Mohorko
 */
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
 using System.Linq;
-using System.Text;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Tools.Google.API.Maps.Geocoding
 {
@@ -61,21 +62,25 @@ namespace GM.Tools.Google.API.Maps.Geocoding
 		/// Gets the geocoding information for the specified address.
 		/// </summary>
 		/// <param name="address">The address.</param>
-		public GeocodingResult<LatLng> GetLatLng(string address)
+		/// <param name="ct"></param>
+		/// <param name="httpClient"></param>
+		public async Task<GeocodingResult<LatLng>> GetLatLng(string address, CancellationToken ct, HttpClient httpClient = null)
 		{
-			return GetLatLng(new Address(address));
+			return await GetLatLng(new Address(address), ct, httpClient);
 		}
 
 		/// <summary>
 		/// Gets the geocoding information for the specified address.
 		/// </summary>
 		/// <param name="address">The address.</param>
-		public GeocodingResult<LatLng> GetLatLng(Address address)
+		/// <param name="ct"></param>
+		/// <param name="httpClient"></param>
+		public async Task<GeocodingResult<LatLng>> GetLatLng(Address address, CancellationToken ct, HttpClient httpClient = null)
 		{
-			var values = new NameValueCollection
+			var values = new List<KeyValuePair<string, string>>
 			{
-				{ "address", address.StreetAddress },
-				{ "key", apiKey }
+				new KeyValuePair<string, string>("address", address.StreetAddress),
+				new KeyValuePair<string, string>("key", apiKey)
 			};
 			// components
 			{
@@ -87,11 +92,12 @@ namespace GM.Tools.Google.API.Maps.Geocoding
 				if(address.Country != null)
 					components.Add(Tuple.Create("country", address.Country));
 
-				if(components.Any())
-					values.Add("components", string.Join("|",components.Select(t => $"{t.Item1}:{t.Item2}")));
+				if(components.Any()) {
+					values.Add(new KeyValuePair<string, string>("components", string.Join("|", components.Select(t => $"{t.Item1}:{t.Item2}"))));
+				}
 			}
 
-			GeocodingResponse response = GoogleAPIHelper.GetResponse<GeocodingResponse>(URL, values);
+			GeocodingResponse response = await GoogleAPIHelper.GetResponse<GeocodingResponse>(URL, values, ct, httpClient);
 
 			var result = new GeocodingResult<LatLng>
 			{
@@ -118,24 +124,28 @@ namespace GM.Tools.Google.API.Maps.Geocoding
 		/// </summary>
 		/// <param name="latitude">The latitude.</param>
 		/// <param name="longitude">The longitude.</param>
-		public GeocodingResult<Address> GetAddress(long latitude,long longitude)
+		/// <param name="ct"></param>
+		/// <param name="httpClient"></param>
+		public async Task<GeocodingResult<Address>> GetAddress(long latitude,long longitude, CancellationToken ct, HttpClient httpClient = null)
 		{
-			return GetAddress(new LatLng(latitude, longitude));
+			return await GetAddress(new LatLng(latitude, longitude), ct, httpClient);
 		}
 
 		/// <summary>
 		/// Gets the address for the specified latitude-longitude pair.
 		/// </summary>
 		/// <param name="latLng">The latitude-longitude pair.</param>
-		public GeocodingResult<Address> GetAddress(LatLng latLng)
+		/// <param name="ct"></param>
+		/// <param name="httpClient"></param>
+		public async Task<GeocodingResult<Address>> GetAddress(LatLng latLng, CancellationToken ct, HttpClient httpClient = null)
 		{
-			var values = new NameValueCollection
+			var values = new List<KeyValuePair<string, string>>
 			{
-				{ "latlng", $"{latLng.Latitude.ToString(CultureInfo.InvariantCulture)},{latLng.Longitude.ToString(CultureInfo.InvariantCulture)}" },
-				{ "key", apiKey }
+				new KeyValuePair<string, string>("latlng", $"{latLng.Latitude.ToString(CultureInfo.InvariantCulture)},{latLng.Longitude.ToString(CultureInfo.InvariantCulture)}"),
+				new KeyValuePair<string, string>("key", apiKey)
 			};
 
-			GeocodingResponse response = GoogleAPIHelper.GetResponse<GeocodingResponse>(URL, values);
+			GeocodingResponse response = await GoogleAPIHelper.GetResponse<GeocodingResponse>(URL, values, ct, httpClient);
 
 			var result = new GeocodingResult<Address>
 			{

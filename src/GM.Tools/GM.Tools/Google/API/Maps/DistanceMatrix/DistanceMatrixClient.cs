@@ -1,7 +1,7 @@
 ﻿/*
 MIT License
 
-Copyright (c) 2018 Grega Mohorko
+Copyright (c) 2023 Gregor Mohorko
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,15 @@ SOFTWARE.
 
 Project: GM.Tools
 Created: 2018-2-1
-Author: GregaMohorko
+Author: Gregor Mohorko
 */
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Globalization;
-using System.Text;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace GM.Tools.Google.API.Maps.DistanceMatrix
 {
@@ -55,9 +56,11 @@ namespace GM.Tools.Google.API.Maps.DistanceMatrix
 
 		/// <param name="start">The starting point for calculating travel distance and time.</param>
 		/// <param name="end">Location to use as the finishing point for calculating.</param>
+		/// <param name="ct"></param>
 		/// <param name="mode">Mode of transport to use when calculating distance.</param>
 		/// <param name="avoid">Restriction to the route.</param>
-		public DistanceMatrixResult Get(Address start, Address end, TransitMode mode = TransitMode.driving, Restriction avoid = Restriction.NONE)
+		/// <param name="httpClient"></param>
+		public async Task<DistanceMatrixResult> Get(Address start, Address end, CancellationToken ct, TransitMode mode = TransitMode.driving, Restriction avoid = Restriction.NONE, HttpClient httpClient = null)
 		{
 			List<string> components = new List<string>();
 			if(!string.IsNullOrWhiteSpace(start.StreetAddress))
@@ -87,45 +90,49 @@ namespace GM.Tools.Google.API.Maps.DistanceMatrix
 				components.Add(end.Country);
 			string endAddress = string.Join(",", components);
 
-			return Get(startAddress, endAddress, mode, avoid);
+			return await Get(startAddress, endAddress, ct, mode, avoid, httpClient);
 		}
 
 		/// <param name="startAddress">The starting point for calculating travel distance and time.</param>
 		/// <param name="endAddress">Location to use as the finishing point for calculating.</param>
+		/// <param name="ct"></param>
 		/// <param name="mode">Mode of transport to use when calculating distance.</param>
 		/// <param name="avoid">Restriction to the route.</param>
-		public DistanceMatrixResult Get(string startAddress,string endAddress,TransitMode mode=TransitMode.driving,Restriction avoid=Restriction.NONE)
+		/// <param name="httpClient"></param>
+		public async Task<DistanceMatrixResult> Get(string startAddress,string endAddress, CancellationToken ct, TransitMode mode=TransitMode.driving,Restriction avoid=Restriction.NONE, HttpClient httpClient = null)
 		{
-			return GetImpl(startAddress, endAddress, mode,avoid);
+			return await GetImpl(startAddress, endAddress, mode,avoid, ct, httpClient);
 		}
 
 		/// <param name="start">The starting point for calculating travel distance and time.</param>
 		/// <param name="end">Location to use as the finishing point for calculating.</param>
+		/// <param name="ct"></param>
 		/// <param name="mode">Mode of transport to use when calculating distance.</param>
 		/// <param name="avoid">Restriction to the route.</param>
-		public DistanceMatrixResult Get(LatLng start,LatLng end, TransitMode mode = TransitMode.driving, Restriction avoid = Restriction.NONE)
+		/// <param name="httpClient"></param>
+		public async Task<DistanceMatrixResult> Get(LatLng start,LatLng end, CancellationToken ct, TransitMode mode = TransitMode.driving, Restriction avoid = Restriction.NONE, HttpClient httpClient = null)
 		{
 			string origin = $"{start.Latitude.ToString(CultureInfo.InvariantCulture)},{start.Longitude.ToString(CultureInfo.InvariantCulture)}";
 			string destination = $"{end.Latitude.ToString(CultureInfo.InvariantCulture)},{end.Longitude.ToString(CultureInfo.InvariantCulture)}";
 
-			return GetImpl(origin, destination, mode,avoid);
+			return await GetImpl(origin, destination, mode,avoid, ct, httpClient);
 		}
 
-		private DistanceMatrixResult GetImpl(string origin,string destination,TransitMode mode,Restriction avoid)
+		private async Task<DistanceMatrixResult> GetImpl(string origin,string destination,TransitMode mode,Restriction avoid, CancellationToken ct, HttpClient httpClient = null)
 		{
-			var values = new NameValueCollection
+			var values = new List<KeyValuePair<string, string>>
 			{
-				{ "origins", origin },
-				{ "destinations", destination },
-				{ "mode", mode.ToString() },
-				{ "units", "metric" },
-				{ "key", apiKey }
+				new KeyValuePair<string, string>("origins", origin),
+				new KeyValuePair<string, string>("destinations", destination),
+				new KeyValuePair<string, string>("mode", mode.ToString()),
+				new KeyValuePair<string, string>("units", "metric"),
+				new KeyValuePair<string, string>("key", apiKey),
 			};
 			if(avoid != Restriction.NONE) {
-				values.Add("avoid", avoid.ToString());
+				values.Add(new KeyValuePair<string, string>("avoid", avoid.ToString()));
 			}
 			
-			DistanceMatrixResponse response = GoogleAPIHelper.GetResponse<DistanceMatrixResponse>(URL, values);
+			DistanceMatrixResponse response = await GoogleAPIHelper.GetResponse<DistanceMatrixResponse>(URL, values, ct, httpClient);
 
 			var result = new DistanceMatrixResult
 			{
