@@ -5,7 +5,7 @@
     <SignAssembly>true</SignAssembly>
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>GM.StrongNameKey.snk</AssemblyOriginatorKeyFile>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
 	<Title>GM.Tools</Title>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Gregor Mohorko</Authors>
@@ -16,8 +16,7 @@
     <Description>Library with a set of specialized tools (e.g. for Google API, ...).</Description>
     <RepositoryUrl>https://github.com/GregaMohorko/GM.Tools</RepositoryUrl>
     <RepositoryType>Git</RepositoryType>
-    <PackageReleaseNotes>Refactored to async methods.
-Updated Nuget packages.</PackageReleaseNotes>
+    <PackageReleaseNotes>Fixed http call not working.</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -34,7 +33,7 @@ Updated Nuget packages.</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GM.Utility" Version="1.4.2" />
+    <PackageReference Include="GM.Utility" Version="1.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
