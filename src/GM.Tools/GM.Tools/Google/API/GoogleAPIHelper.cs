@@ -40,8 +40,8 @@ namespace GM.Tools.Google.API
 		public static async Task<T> GetResponse<T>(string url, IEnumerable<KeyValuePair<string, string>> values, CancellationToken ct, HttpClient httpClient = null)
 		{
 			string jsonResult;
-			using(var webClient = new GMHttpClient(httpClient, disposeHttpClient: httpClient != null)) {
-				jsonResult = await webClient.UploadValuesAsync(url, values, System.Net.Http.HttpMethod.Get, ct);
+			using(var gmHttpClient = new GMHttpClient(httpClient, disposeHttpClient: httpClient != null)) {
+				jsonResult = await gmHttpClient.SendGet(url, values, ct);
 			}
 
 			T response = JsonConvert.DeserializeObject<T>(jsonResult);
